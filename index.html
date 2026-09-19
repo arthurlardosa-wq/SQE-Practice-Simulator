@@ -29,7 +29,7 @@ JavaScript is disabled in this file viewer. Open this HTML in a full web browser
 <div id="pauseOverlay" class="overlay hidden"><h2>PAUSED</h2><button class="btn primary" onclick="togglePause()">RESUME</button></div>
 <div class="shell">
 <section id="start" class="card">
-<h1>SQE1 PRACTICE</h1><p class="muted">January 2027 • 1,020-question training bank</p>
+<h1>SQE1 PRACTICE</h1><p class="muted">January 2027 • 1,100-question training bank</p>
 <div id="continueBox" class="hidden"><button class="btn primary" onclick="continueSession()">CONTINUE PREVIOUS SESSION</button><hr></div>
 <h3>Choose mode</h3>
 <div class="start-grid">
@@ -105,7 +105,7 @@ function setMode(m){mode=m;$('sessionPicker').classList.remove('hidden')}
 function makeSession(qs,m){
  const now=Date.now(); return {mode:m,ids:qs.map(q=>q.question_id),idx:0,answers:{},checked:{},flags:{},qms:{},started:now,lastActive:now,elapsed:0,pausedMs:0,finished:false};
 }
-function startPreset(f,s){let qs=QUESTIONS.filter(q=>q.flk===f&&q.session_2027===s);session=makeSession(qs,mode);save();openQuiz()}
+function startPreset(f,s){let qs=shuffle(QUESTIONS.filter(q=>q.flk===f&&q.session_2027===s)).slice(0,85);session=makeSession(qs,mode);save();openQuiz()}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function startCustom(){
  let qs=QUESTIONS.filter(q=>(!$('cf').value||q.flk===$('cf').value)&&(!$('cs').value||q.subject===$('cs').value)&&(!$('cd').value||q.difficulty===$('cd').value));
