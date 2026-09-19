@@ -1,1 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SQE1 Practice — January 2027</title>
+<style>
+:root{--bg:#34373b;--panel:#45494e;--panel2:#3d4146;--text:#f3f4f5;--muted:#bfc4c9;--line:#626870;--yellow:#ffd84d;--green:#54d37d;--red:#ff6b6b;--blue:#9dc3ff}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,select{font:inherit} button{cursor:pointer}.hidden{display:none!important}
+.shell{max-width:1100px;margin:auto;padding:24px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+h1,h2,h3{margin-top:0}.muted{color:var(--muted)}.topbar{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}
+.meta{font-size:.92rem;color:var(--muted);margin-top:4px}.timers{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;justify-content:flex-end}
+.timer{background:#26292d;border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:118px;text-align:center}.timer label{display:block;color:var(--muted);font-size:.7rem;letter-spacing:.12em}.digits{font:700 1.15rem ui-monospace,SFMono-Regular,Menlo,monospace}.qtime{color:var(--yellow)}.stime{color:var(--green)}.stime.over{color:var(--red)}
+.question{font-size:1.15rem;line-height:1.55;margin:20px 0}.options{display:grid;gap:10px}.option{display:flex;gap:12px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;line-height:1.4}.option:hover{border-color:#8a9199}.option.selected{outline:2px solid var(--blue)}.option.correct{border-color:var(--green);background:#304a39}.option.wrong{border-color:var(--red);background:#513638}
+.option input{margin-top:3px}.actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:20px}.btn{border:1px solid var(--line);background:#2c3034;color:white;border-radius:9px;padding:10px 14px}.btn.primary{background:#e8eaed;color:#202124;border-color:#e8eaed;font-weight:700}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.flagged{color:var(--yellow);border-color:var(--yellow)}
+.feedback{margin-top:18px;background:#2c3034;border:1px solid var(--line);border-radius:10px;padding:18px}.result-good{color:var(--green);font-weight:800}.result-bad{color:var(--red);font-weight:800}.analysis-row{padding:8px 0;border-bottom:1px solid #454a50}.analysis-row:last-child{border-bottom:0}details{margin-top:14px}a{color:#bcd7ff}
+.start-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.choice{background:var(--panel2);border:1px solid var(--line);padding:18px;border-radius:10px;color:white;text-align:left}.choice:hover{border-color:#a0a7af}.controls{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.controls select{background:#2c3034;color:white;border:1px solid var(--line);padding:9px;border-radius:8px}
+.overlay{position:fixed;inset:0;background:rgba(25,27,29,.93);z-index:20;display:flex;align-items:center;justify-content:center;flex-direction:column}.overlay h2{font-size:2rem}
+.navigator{position:fixed;right:20px;top:100px;z-index:10;width:min(360px,calc(100vw - 40px));max-height:75vh;overflow:auto;background:#292d31;border:1px solid var(--line);border-radius:12px;padding:15px}.navgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}.navnum{padding:8px 3px;background:#41464b;border:1px solid #646b72;color:white;border-radius:6px}.navnum.current{outline:2px solid var(--blue)}.navnum.answered:after{content:" •"}.navnum.flagged{color:var(--yellow)}
+.results table{width:100%;border-collapse:collapse}.results th,.results td{padding:9px;border-bottom:1px solid var(--line);text-align:left}.bar{height:8px;background:#2b2e32;border-radius:4px;overflow:hidden}.bar span{display:block;height:100%;background:#d8dde3}
+@media(max-width:700px){.shell{padding:12px}.card{padding:16px}.topbar{display:block}.timers{justify-content:flex-start;margin-top:14px}.timer{min-width:100px}.question{font-size:1.05rem}.navgrid{grid-template-columns:repeat(6,1fr)}}
+</style>
+</head>
+<body>
+<noscript><div style="margin:20px;padding:16px;background:#6b2f2f;color:white;border-radius:10px">
+JavaScript is disabled in this file viewer. Open this HTML in a full web browser rather than the iOS/ChatGPT file preview.
+</div></noscript>
+<div id="pauseOverlay" class="overlay hidden"><h2>PAUSED</h2><button class="btn primary" onclick="togglePause()">RESUME</button></div>
+<div class="shell">
+<section id="start" class="card">
+<h1>SQE1 PRACTICE</h1><p class="muted">January 2027 • 1,020-question training bank</p>
+<div id="continueBox" class="hidden"><button class="btn primary" onclick="continueSession()">CONTINUE PREVIOUS SESSION</button><hr></div>
+<h3>Choose mode</h3>
+<div class="start-grid">
+<button class="choice" onclick="setMode('training')"><strong>TRAINING MODE</strong><br><span class="muted">Immediate answer checking and explanations.</span></button>
+<button class="choice" onclick="setMode('exam')"><strong>EXAM MODE</strong><br><span class="muted">Feedback is withheld until the session is finished.</span></button>
+</div>
+<div id="sessionPicker" class="hidden">
+<h3 style="margin-top:24px">Choose paper</h3>
+<div class="start-grid">
+<button class="choice" onclick="startPreset('FLK1',1)">FLK1 • SESSION 1<br><span class="muted">85 questions</span></button>
+<button class="choice" onclick="startPreset('FLK1',2)">FLK1 • SESSION 2<br><span class="muted">85 questions</span></button>
+<button class="choice" onclick="startPreset('FLK2',1)">FLK2 • SESSION 1<br><span class="muted">85 questions</span></button>
+<button class="choice" onclick="startPreset('FLK2',2)">FLK2 • SESSION 2<br><span class="muted">85 questions</span></button>
+</div>
+<h3 style="margin-top:24px">Custom practice</h3>
+<div class="controls">
+<select id="cf"><option value="">All FLKs</option><option>FLK1</option><option>FLK2</option></select>
+<select id="cs"><option value="">All subjects</option></select>
+<select id="cd"><option value="">All difficulties</option><option>Easy</option><option>Medium</option><option>Hard</option></select>
+<select id="cn"><option>10</option><option>20</option><option>40</option><option>85</option><option>170</option><option>340</option><option value="ALL">ALL</option></select>
+<label><input type="checkbox" id="cr"> Randomise questions</label>
+</div>
+<button class="btn primary" onclick="startCustom()">START CUSTOM PRACTICE</button>
+</div>
+<div style="margin-top:24px"><button class="btn" onclick="showPerformance()">PERFORMANCE</button> <button class="btn" onclick="resetProgress()">RESET PROGRESS</button></div>
+</section>
 
+<section id="quiz" class="card hidden">
+<div class="topbar">
+<div><strong id="counter"></strong><div class="meta" id="meta"></div></div>
+<div class="timers">
+<div class="timer"><label>QUESTION</label><span id="qtime" class="digits qtime">00:00</span></div>
+<div class="timer"><label>SESSION</label><span id="stime" class="digits stime">00:00:00</span></div>
+<button class="btn" onclick="togglePause()">PAUSE</button>
+</div>
+</div>
+<div id="question" class="question"></div>
+<div id="options" class="options"></div>
+<div class="actions">
+<div><button id="flagBtn" class="btn" onclick="toggleFlag()">☆ FLAG FOR REVIEW</button> <button class="btn" onclick="toggleNavigator()">QUESTION NAVIGATOR</button></div>
+<button id="checkBtn" class="btn primary" onclick="checkAnswer()">CHECK ANSWER</button>
+</div>
+<div id="feedback" class="feedback hidden"></div>
+<div class="actions">
+<button id="prevBtn" class="btn" onclick="go(-1)">← PREVIOUS</button>
+<button class="btn" onclick="finishSession()">FINISH SESSION</button>
+<button id="nextBtn" class="btn primary" onclick="go(1)">NEXT →</button>
+</div>
+</section>
+
+<section id="results" class="card results hidden"></section>
+</div>
+<div id="navigator" class="navigator hidden"></div>
+<script src="questions-1.js"></script>
+<script src="questions-2.js"></script>
+<script src="questions-3.js"></script>
+<script>const QUESTIONS=[...QUESTIONS_1,...QUESTIONS_2,...QUESTIONS_3];</script>
+<script>
+/* Question bank loaded from three smaller JavaScript files */
+const LIMIT=153*60*1000, KEY='sqe1_practice_2027_v1', HIST='sqe1_history_2027_v1';
+let mode='training', session=null, tick=null, paused=false, pauseStarted=0;
+
+const $=id=>document.getElementById(id);
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+function save(){if(session)localStorage.setItem(KEY,JSON.stringify(session))}
+function history(){try{return JSON.parse(localStorage.getItem(HIST))||{attempts:{},sessions:[]}}catch(e){return {attempts:{},sessions:[]}}}
+function saveHistory(h){localStorage.setItem(HIST,JSON.stringify(h))}
+function init(){
+ const subjects=[...new Set(QUESTIONS.map(q=>q.subject))].sort(); subjects.forEach(s=>$('cs').add(new Option(s,s)));
+ if(load())$('continueBox').classList.remove('hidden');
+}
+function setMode(m){mode=m;$('sessionPicker').classList.remove('hidden')}
+function makeSession(qs,m){
+ const now=Date.now(); return {mode:m,ids:qs.map(q=>q.question_id),idx:0,answers:{},checked:{},flags:{},qms:{},started:now,lastActive:now,elapsed:0,pausedMs:0,finished:false};
+}
+function startPreset(f,s){let qs=QUESTIONS.filter(q=>q.flk===f&&q.session_2027===s);session=makeSession(qs,mode);save();openQuiz()}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function startCustom(){
+ let qs=QUESTIONS.filter(q=>(!$('cf').value||q.flk===$('cf').value)&&(!$('cs').value||q.subject===$('cs').value)&&(!$('cd').value||q.difficulty===$('cd').value));
+ if($('cr').checked)qs=shuffle(qs); let n=$('cn').value;if(n!=='ALL')qs=qs.slice(0,+n);if(!qs.length)return alert('No questions match those filters.');
+ session=makeSession(qs,mode);save();openQuiz()
+}
+function continueSession(){session=load();mode=session.mode;session.lastActive=Date.now();openQuiz()}
+function openQuiz(){$('start').classList.add('hidden');$('results').classList.add('hidden');$('quiz').classList.remove('hidden');render();startTick()}
+function current(){return QUESTIONS.find(q=>q.question_id===session.ids[session.idx])}
+function account(){
+ if(!session||paused||session.finished||(session.mode==='training'&&session.checked&&session.checked[current().question_id]))return;
+ let now=Date.now(),d=Math.max(0,now-session.lastActive);session.elapsed+=d;let id=current().question_id;session.qms[id]=(session.qms[id]||0)+d;session.lastActive=now;
+}
+function startTick(){clearInterval(tick);session.lastActive=Date.now();tick=setInterval(()=>{account();updateTimers();save()},250)}
+function fmt(ms,full=false){let s=Math.floor(ms/1000),h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60),ss=s%60;return full||h?`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`:`${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`}
+function updateTimers(){let q=current();$('qtime').textContent=fmt(session.qms[q.question_id]||0);$('stime').textContent=fmt(session.elapsed,true);$('stime').classList.toggle('over',session.elapsed>LIMIT)}
+function render(){
+ account();let q=current(),ans=session.answers[q.question_id],checked=session.checked[q.question_id];
+ $('counter').textContent=`Question ${session.idx+1} of ${session.ids.length}`;$('meta').textContent=`${q.flk} • ${q.subject} • ${q.subtopic}`;
+ $('question').textContent=q.question;let box=$('options');box.innerHTML='';
+ Object.entries(q.options).forEach(([k,v])=>{let lab=document.createElement('label');lab.className='option'+(ans===k?' selected':'');
+ if((session.mode==='training'&&checked)||(session.finished)){if(k===q.correct_answer)lab.classList.add('correct');else if(ans===k)lab.classList.add('wrong')}
+ lab.innerHTML=`<input type="radio" name="ans" value="${k}" ${ans===k?'checked':''} ${(checked&&session.mode==='training')||session.finished?'disabled':''}><strong>${k}.</strong><span></span>`;lab.querySelector('span').textContent=v;
+ lab.onclick=()=>select(k);box.appendChild(lab)});
+ $('checkBtn').classList.toggle('hidden',session.mode==='exam');$('checkBtn').disabled=!ans||!!checked;
+ $('flagBtn').textContent=session.flags[q.question_id]?'★ FLAGGED':'☆ FLAG FOR REVIEW';$('flagBtn').classList.toggle('flagged',!!session.flags[q.question_id]);
+ $('prevBtn').disabled=session.idx===0;$('nextBtn').disabled=session.idx===session.ids.length-1;
+ if((session.mode==='training'&&checked)||session.finished)showFeedback();else $('feedback').classList.add('hidden');
+ updateTimers();save()
+}
+function select(k){let q=current();if((session.mode==='training'&&session.checked[q.question_id])||session.finished)return;session.answers[q.question_id]=k;render()}
+function checkAnswer(){let q=current();if(!session.answers[q.question_id])return;account();session.checked[q.question_id]=true;session.lastActive=Date.now();recordAttempt(q,session.answers[q.question_id]);render()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function link(v){return /^https?:\/\//.test(v||'')?`<a href="${esc(v)}" target="_blank" rel="noopener">${esc(v)}</a>`:esc(v)}
+function showFeedback(){
+ let q=current(),a=session.answers[q.question_id],ok=a===q.correct_answer,f=$('feedback');f.classList.remove('hidden');
+ let rows=Object.entries(q.why_each_option||{}).map(([k,v])=>`<div class="analysis-row"><strong>${k}</strong> — ${esc(v)}</div>`).join('');
+ f.innerHTML=`<div class="${ok?'result-good':'result-bad'}">${ok?'CORRECT':'INCORRECT'}</div>${ok?'':`<p>Correct answer: <strong>${q.correct_answer}</strong></p>`}
+ <h3>EXPLANATION</h3><p>${esc(q.explanation)}</p><p><strong>Key rule:</strong> ${esc(q.key_rule)}</p><p><strong>Common trap:</strong> ${esc(q.common_trap)}</p>
+ <h3>ANSWER ANALYSIS</h3>${rows}<details><summary>LEGAL SOURCES</summary><p>Primary: ${link(q.primary_legal_authority)}</p><p>Secondary: ${link(q.secondary_verification)}</p></details>`;
+}
+function go(d){account();session.idx=Math.max(0,Math.min(session.ids.length-1,session.idx+d));session.lastActive=Date.now();render()}
+function toggleFlag(){let id=current().question_id;session.flags[id]=!session.flags[id];render()}
+function togglePause(){
+ if(!session)return;if(!paused){account();paused=true;pauseStarted=Date.now();$('pauseOverlay').classList.remove('hidden')}else{paused=false;session.pausedMs+=Date.now()-pauseStarted;session.lastActive=Date.now();$('pauseOverlay').classList.add('hidden')}save()
+}
+function toggleNavigator(){let n=$('navigator');n.classList.toggle('hidden');if(!n.classList.contains('hidden'))renderNavigator()}
+function renderNavigator(){let n=$('navigator');n.innerHTML='<h3>QUESTION NAVIGATOR</h3><div class="navgrid" id="ng"></div><p><button class="btn" onclick="toggleNavigator()">CLOSE</button></p>';let g=n.querySelector('#ng');
+ session.ids.forEach((id,i)=>{let b=document.createElement('button');b.className='navnum'+(i===session.idx?' current':'')+(session.answers[id]?' answered':'')+(session.flags[id]?' flagged':'');b.textContent=i+1;b.onclick=()=>{account();session.idx=i;session.lastActive=Date.now();toggleNavigator();render()};g.appendChild(b)})
+}
+function recordAttempt(q,a){let h=history(),x=h.attempts[q.question_id]||{tries:0,correct:0,subject:q.subject,subtopic:q.subtopic,flk:q.flk};x.tries++;if(a===q.correct_answer)x.correct++;h.attempts[q.question_id]=x;saveHistory(h)}
+function finishSession(){
+ account();let unanswered=session.ids.filter(id=>!session.answers[id]).length, flagged=session.ids.filter(id=>session.flags[id]).length;
+ if((unanswered||flagged)&&!confirm(`${unanswered} unanswered; ${flagged} flagged. Finish session?`))return;
+ if(session.mode==='exam')session.ids.forEach(id=>{let q=QUESTIONS.find(x=>x.question_id===id);if(session.answers[id])recordAttempt(q,session.answers[id])});
+ session.finished=true;clearInterval(tick);save();showResults()
+}
+function showResults(){
+ $('quiz').classList.add('hidden');$('navigator').classList.add('hidden');$('results').classList.remove('hidden');
+ let qs=session.ids.map(id=>QUESTIONS.find(q=>q.question_id===id)),correct=qs.filter(q=>session.answers[q.question_id]===q.correct_answer).length;
+ let by={};qs.forEach(q=>{let b=by[q.subject]||(by[q.subject]={c:0,n:0});b.n++;if(session.answers[q.question_id]===q.correct_answer)b.c++});
+ let times=qs.map(q=>({q,t:session.qms[q.question_id]||0})).filter(x=>x.t>0).sort((a,b)=>a.t-b.t);
+ let rows=Object.entries(by).sort((a,b)=>a[1].c/a[1].n-b[1].c/b[1].n).map(([s,v])=>`<tr><td>${esc(s)}</td><td>${v.c}</td><td>${v.n}</td><td>${(100*v.c/v.n).toFixed(1)}%</td></tr>`).join('');
+ let over=session.elapsed>LIMIT, delta=Math.abs(LIMIT-session.elapsed), unanswered=qs.filter(q=>!session.answers[q.question_id]).length;
+ $('results').innerHTML=`<h1>SESSION RESULTS</h1><p><strong>Score:</strong> ${correct} / ${qs.length} &nbsp; <strong>Percentage:</strong> ${(100*correct/qs.length).toFixed(1)}%</p>
+ <p><strong>Time used:</strong> ${fmt(session.elapsed,true)}${qs.length===85?` &nbsp; <strong>Time limit:</strong> 02:33:00 &nbsp; <strong>${over?'Overtime':'Remaining'}:</strong> ${fmt(delta,true)}`:''}</p>
+ <p><strong>Average/question:</strong> ${fmt(session.elapsed/qs.length)} &nbsp; <strong>Unanswered:</strong> ${unanswered} &nbsp; <strong>Flagged:</strong> ${session.ids.filter(id=>session.flags[id]).length}</p>
+ ${times.length?`<p><strong>Fastest:</strong> ${fmt(times[0].t)} &nbsp; <strong>Slowest:</strong> ${fmt(times[times.length-1].t)}</p>`:''}
+ <h2>Performance by subject</h2><table><thead><tr><th>Subject</th><th>Correct</th><th>Total</th><th>%</th></tr></thead><tbody>${rows}</tbody></table>
+ <div class="actions"><button class="btn" onclick="reviewIncorrect()">REVIEW INCORRECT ANSWERS</button><button class="btn" onclick="retryIncorrect()">RETRY INCORRECT QUESTIONS</button><button class="btn primary" onclick="home()">HOME</button></div>`;
+ let h=history();h.sessions.push({date:new Date().toISOString(),mode:session.mode,count:qs.length,correct,time:session.elapsed});saveHistory(h)
+}
+function reviewIncorrect(){let ids=session.ids.filter(id=>{let q=QUESTIONS.find(x=>x.question_id===id);return session.answers[id]!==q.correct_answer});if(!ids.length)return alert('No incorrect answers.');session.ids=ids;session.idx=0;session.finished=true;$('results').classList.add('hidden');$('quiz').classList.remove('hidden');render()}
+function retryIncorrect(){let ids=session.ids.filter(id=>{let q=QUESTIONS.find(x=>x.question_id===id);return session.answers[id]!==q.correct_answer});if(!ids.length)return alert('No incorrect answers.');let qs=ids.map(id=>QUESTIONS.find(q=>q.question_id===id));session=makeSession(qs,'training');mode='training';save();$('results').classList.add('hidden');openQuiz()}
+function showPerformance(){let h=history(),vals=Object.values(h.attempts),tries=vals.reduce((a,x)=>a+x.tries,0),correct=vals.reduce((a,x)=>a+x.correct,0);let by={};vals.forEach(x=>{let b=by[x.subject]||(by[x.subject]={t:0,c:0});b.t+=x.tries;b.c+=x.correct});let rows=Object.entries(by).sort((a,b)=>a[1].c/a[1].t-b[1].c/b[1].t).map(([s,v])=>`<tr><td>${esc(s)}</td><td>${v.c}</td><td>${v.t}</td><td>${(100*v.c/v.t).toFixed(1)}%</td></tr>`).join('');
+ $('start').classList.add('hidden');$('results').classList.remove('hidden');$('results').innerHTML=`<h1>PERFORMANCE</h1><p>Total attempts: ${tries} &nbsp; Overall accuracy: ${tries?(100*correct/tries).toFixed(1):'0.0'}%</p><table><tr><th>Subject</th><th>Correct</th><th>Attempts</th><th>%</th></tr>${rows}</table><p><button class="btn primary" onclick="home()">HOME</button></p>`}
+function home(){clearInterval(tick);session=null;localStorage.removeItem(KEY);$('results').classList.add('hidden');$('quiz').classList.add('hidden');$('start').classList.remove('hidden');$('continueBox').classList.add('hidden')}
+function resetProgress(){if(confirm('Delete all saved SQE1 progress and history?')){localStorage.removeItem(KEY);localStorage.removeItem(HIST);location.reload()}}
+document.addEventListener('keydown',e=>{if($('quiz').classList.contains('hidden')||paused)return;let k=e.key.toUpperCase();if('ABCDE'.includes(k))select(k);if(e.key==='Enter'&&session.mode==='training'&&!$('checkBtn').disabled)checkAnswer()});
+init();
+</script>
+</body></html>
